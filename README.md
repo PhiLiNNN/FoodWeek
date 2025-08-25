@@ -1,16 +1,40 @@
-# foodweek
+# FoodWeek 🍲📅
 
-A new Flutter project.
+**FoodWeek** is a Flutter app that makes weekly meal planning easy.  
+Add your favorite dishes and let the app generate a **random weekly meal plan** with one tap – no more endless thinking about what to cook.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Features (current MVP)
 
-A few resources to get you started if this is your first Flutter project:
+- Add meals via input dialog  
+- Display and delete meals in a list  
+- Generate a weekly plan with a button  
+- Before generating: choose number of meals in a dialog (1–7)  
+- Random selection without duplicates  
+- Helpful snackbars (e.g., “Please add at least X meals”)  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🚀 Planned Features (Backlog)
+
+- Save meals locally (persist after app restart)  
+- Categorize meals (e.g., pasta, meat, vegetarian) for more balanced plans  
+- Automatically generate a shopping list from the weekly plan  
+- Share/export plan (text or PDF)  
+- Dark mode & UI refinements  
+
+---
+
+## 🛠️ Installation & Usage
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/PhiLiNNN/FoodWeek.git
+   cd foodweek
+   
+2. **Install dependencies**
+   flutter pub get
+
+3. **Run the app (with emulator or real device)**
+   flutter run
