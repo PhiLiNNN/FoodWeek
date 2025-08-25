@@ -34,7 +34,7 @@ Add your favorite dishes and let the app generate a **random weekly meal plan** 
    cd foodweek
    
 2. **Install dependencies**
-   flutter pub get
+   - flutter pub get
 
 3. **Run the app (with emulator or real device)**
-   flutter run
+   - flutter run
