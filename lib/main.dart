@@ -11,43 +11,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Meine Gerichte',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(
             seedColor: const Color.fromARGB(255, 58, 60, 183)),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Test Home Page'),
+      home: const MyHomePage(title: 'Meine Gerichte'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
 
   final String title;
 
@@ -56,8 +32,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
   final List<String> _meals = [];
+  List<String> _weeklyPlan = [];
 
   Future<void> _showAddMealDialog() async {
     final controller = TextEditingController();
@@ -95,59 +71,117 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _removeMealAt(int index) {
+    setState(() {
+      _meals.removeAt(index);
+    });
+  }
+
+  void _generatePlan(int count) {
+    if (_meals.length < count) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Bitte füge mindestens $count Gerichte hinzu.'),
+        ),
+      );
+      return;
+    }
+    final shuffled = List.of(_meals)..shuffle();
+    setState(() {
+      _weeklyPlan = shuffled.take(count).toList();
+    });
+  }
+
+  Future<void> _askCountAndGenerate() async {
+    if (_meals.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bitte füge zuerst Gerichte hinzu.'),
+        ),
+      );
+      return;
+    }
+    final _max = _meals.length < 7 ? _meals.length : 7;
+    int selected = _max >= 5 ? 5 : _max;
+
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setLocalState) {
+            return AlertDialog(
+              title: const Text('Anzahl für den Wochenplan'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Gerichte: $selected'),
+                  Slider(
+                    value: selected.toDouble(),
+                    min: 1,
+                    max: _max.toDouble(),
+                    divisions: _max > 1 ? _max - 1 : null,
+                    label: '$selected',
+                    onChanged: (value) =>
+                        setLocalState(() => selected = value.round()),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Abbrechen')),
+                FilledButton(
+                  onPressed: () => Navigator.of(context).pop(selected),
+                  child: const Text('Erzeugen'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (result != null) {
+      _generatePlan(result);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+          children: [
             Text('Gerichte insgesamt: ${_meals.length}'),
-            SizedBox(
-              height: 200,
+            ElevatedButton(
+              onPressed: _askCountAndGenerate,
+              child: const Text('Wochenplan erzeugen'),
+            ),
+            if (_weeklyPlan.isNotEmpty) ...[
+              const SizedBox(
+                height: 16,
+              ),
+              const Text(
+                'Dein Wochenplan:',
+              ),
+              ..._weeklyPlan.map((meal) => Text(meal)).toList(),
+            ],
+            Expanded(
               child: ListView.builder(
                 itemCount: _meals.length,
                 itemBuilder: (context, index) {
                   final meal = _meals[index];
                   return ListTile(
                     title: Text(meal),
+                    trailing: IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () => _removeMealAt(index)),
                   );
                 },
               ),
@@ -157,7 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddMealDialog,
-        tooltip: 'Increment',
+        tooltip: 'Gericht hinzufügen',
         child: const Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
